@@ -55,6 +55,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        initViews()
+        // Initializing mapView element
+        initMap()
+
         setupMarker()
 
 
@@ -63,9 +67,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupMarker() {
 
-        initViews()
-        // Initializing mapView element
-        initMap()
+
 
         mapView.setOnMapLongClickListener { latLng ->
             if (markers.size < 2) {
@@ -83,7 +85,9 @@ class MainActivity : AppCompatActivity() {
 
         // when on marker clicked, change marker style to blue
         // when on marker clicked, change marker style to blue
-        mapView.setOnMarkerClickListener { marker1 -> mapView.removeMarker(marker1) }
+        mapView.setOnMarkerClickListener { marker1 -> mapView.removeMarker(marker1)
+            markers.remove(marker1)
+        }
     }
 
 
