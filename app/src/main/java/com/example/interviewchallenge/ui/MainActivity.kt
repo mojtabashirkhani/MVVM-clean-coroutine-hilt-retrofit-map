@@ -30,6 +30,8 @@ import retrofit2.Response
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
+    private var originRemoved = false
+
     private lateinit var mapView: MapView
     private lateinit var animSt: AnimationStyle
     private lateinit var marker: Marker
@@ -74,7 +76,20 @@ class MainActivity : AppCompatActivity() {
 
 
             if (markers.size < 6) {
-                markers.add(createMarker(latLng));
+                when {
+                    markers.size == 0 -> {
+                        originRemoved = true
+                        markers.add(0,createMarker(latLng, originRemoved))
+                        originRemoved = false
+                    }
+                    originRemoved -> {
+                        markers.add(0,createMarker(latLng, originRemoved))
+                        originRemoved = false
+                    }
+                    else -> {
+                        markers.add(createMarker(latLng, originRemoved))
+                    }
+                }
                 if (markers.size == 6) {
                     markers[0].title = "origin"
                     for (i in 1..5) {
@@ -82,21 +97,23 @@ class MainActivity : AppCompatActivity() {
                     }
                     runOnUiThread {
                         overviewToggleButton.isChecked = true;
-//                        neshanRoutingApi()
                         neshanMatrixApi()
                     };
                 }
             } else {
-                TODO("Not yet implemented")
+//                TODO("Not yet implemented")
 //                runOnUiThread(() -> Toast.makeText(Routing.this, "مسیریابی بین دو نقطه انجام میشود!", Toast.LENGTH_SHORT).show());
             }
         }
 
         // when on marker clicked, change marker style to blue
         // when on marker clicked, change marker style to blue
-        mapView.setOnMarkerClickListener { marker1 ->
-            mapView.removeMarker(marker1)
-            markers.remove(marker1)
+        mapView.setOnMarkerClickListener { marker ->
+            if (marker.title.equals("origin")) {
+                originRemoved = true
+            }
+            mapView.removeMarker(marker)
+            markers.remove(marker)
         }
     }
 
@@ -216,7 +233,7 @@ class MainActivity : AppCompatActivity() {
             })
     }
 
-    private fun createMarker(latLng: LatLng?): Marker {
+    private fun createMarker(latLng: LatLng?, originRemovedFlag: Boolean): Marker {
 
 
         val animStBl = AnimationStyleBuilder()
@@ -234,25 +251,20 @@ class MainActivity : AppCompatActivity() {
         val markStCr = MarkerStyleBuilder()
         markStCr.size = 30f
 
-        markStCr.bitmap = BitmapUtils.createBitmapFromAndroidBitmap(
-            BitmapFactory.decodeResource(
-                resources, R.drawable.ic_marker
+        if (originRemovedFlag) {
+            markStCr.bitmap = BitmapUtils.createBitmapFromAndroidBitmap(
+                BitmapFactory.decodeResource(
+                    resources, R.drawable.ic_origin
+                )
             )
-        )
+        } else if (!originRemovedFlag) {
+            markStCr.bitmap = BitmapUtils.createBitmapFromAndroidBitmap(
+                BitmapFactory.decodeResource(
+                    resources, R.drawable.ic_marker
+                )
+            )
+        }
 
-        /* if(marker.title == "origin") {
-             markStCr.bitmap = BitmapUtils.createBitmapFromAndroidBitmap(
-                 BitmapFactory.decodeResource(
-                     resources, R.drawable.ic_origin_location
-                 )
-             )
-         } else if (marker.title == "destination") {
-             markStCr.bitmap = BitmapUtils.createBitmapFromAndroidBitmap(
-                 BitmapFactory.decodeResource(
-                     resources, R.drawable.ic_marker
-                 )
-             )
-         }*/
 
         // AnimationStyle object - that was created before - is used here
         // AnimationStyle object - that was created before - is used here
