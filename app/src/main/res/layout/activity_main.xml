@@ -32,7 +32,6 @@
         android:layout_marginBottom="8dp"
         android:checked="false"
         android:drawablePadding="8dp"
-        android:elevation="8dp"
         android:onClick="findRoute"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
@@ -41,7 +40,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline"
         app:layout_constraintStart_toStartOf="parent"
-        tools:targetApi="m" />
+        />
 
     <ToggleButton
         android:id="@+id/stepByStepToggleButton"
@@ -52,7 +51,6 @@
         android:layout_marginBottom="8dp"
         android:checked="false"
         android:drawablePadding="8dp"
-        android:elevation="8dp"
         android:onClick="findRoute"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
@@ -61,6 +59,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guideline"
-        tools:targetApi="m" />
+         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

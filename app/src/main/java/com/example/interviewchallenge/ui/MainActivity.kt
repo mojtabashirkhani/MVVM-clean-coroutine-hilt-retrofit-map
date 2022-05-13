@@ -101,8 +101,7 @@ class MainActivity : AppCompatActivity() {
                     };
                 }
             } else {
-//                TODO("Not yet implemented")
-//                runOnUiThread(() -> Toast.makeText(Routing.this, "مسیریابی بین دو نقطه انجام میشود!", Toast.LENGTH_SHORT).show());
+//            Toast.makeText(this@MainActivity, "مسیریابی بین دو نقطه انجام میشود!", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -170,17 +169,23 @@ class MainActivity : AppCompatActivity() {
                 call: Call<NeshanDistanceMatrixResult?>,
                 response: Response<NeshanDistanceMatrixResult?>
             ) {
-                val responseBody = response.body()
-                for (i in 0 .. 4){
-                    distances.add(responseBody!!.rows[0].elements[i].duration.value)
+                if (response.body() != null && response.body()!!
+                        .rows != null && response.body()!!.rows.isNotEmpty()){
+                    val responseBody = response.body()
+                    for (i in 0 .. 4){
+                        distances.add(responseBody!!.rows[0].elements[i].duration.value)
+                    }
+                    val shortestDistanceIndexValue =  distances.sortedWith(compareBy { it}).first().let { distances.indexOf(it) }
+                    val shortestDestinationPath =  responseBody!!.destinationAddresses[shortestDistanceIndexValue]
+                    neshanRoutingApi(origins[0],LatLng(shortestDestinationPath.split(",")[0].toDouble(), shortestDestinationPath.split(",")[1].toDouble()))
+                } else {
+//                    Toast.makeText(this@MainActivity, "مسیری یافت نشد", Toast.LENGTH_LONG).show()
                 }
-               val shortestDistanceIndexValue =  distances.sortedWith(compareBy { it}).first().let { distances.indexOf(it) }
-               val shortestDestinationPath =  responseBody!!.destinationAddresses[shortestDistanceIndexValue]
-                neshanRoutingApi(origins[0],LatLng(shortestDestinationPath.split(",")[0].toDouble(), shortestDestinationPath.split(",")[1].toDouble()))
+
             }
 
             override fun onFailure(call: Call<NeshanDistanceMatrixResult?>, t: Throwable) {
-//                TODO("Not yet implemented")
+//                Toast.makeText(this@MainActivity, t.message, Toast.LENGTH_SHORT).show()
             }
 
         })
@@ -189,7 +194,6 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun neshanRoutingApi(origin: LatLng, destination: LatLng) {
-        //TODO find shortest path between origin and destinations
         NeshanDirection.Builder(
             "service.VNlPhrWb3wYRzEYmstQh3GrAXyhyaN55AqUSRR3V",
             origin,
@@ -223,12 +227,12 @@ class MainActivity : AppCompatActivity() {
                         // focusing camera on first point of drawn line
                         mapSetPosition(overview)
                     } else {
-//                        Toast.makeText(this, "مسیری یافت نشد", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@MainActivity, "مسیری یافت نشد", Toast.LENGTH_LONG).show()
                     }
                 }
 
                 override fun onFailure(call: Call<NeshanDirectionResult?>?, t: Throwable?) {
-//                    TODO("Not yet implemented")
+//                    Toast.makeText(this@MainActivity, t?.message, Toast.LENGTH_SHORT).show()
                 }
             })
     }
@@ -308,28 +312,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun findRoute(view: View?) {
-        //TODO handle route when have 1 origin and 5 destination
-        if (markers.size < 2) {
-            Toast.makeText(this, "برای مسیریابی باید دو نقطه انتخاب شود", Toast.LENGTH_SHORT).show()
-            overviewToggleButton.isChecked = false
-            stepByStepToggleButton.isChecked = false
-        } else if (overviewToggleButton.isChecked) {
-            try {
-                mapView.removePolyline(onMapPolyline)
-                onMapPolyline = Polyline(routeOverviewPolylinePoints, getLineStyle())
-                //draw polyline between route points
-                mapView.addPolyline(onMapPolyline)
-            } catch (e: Exception) {
-                e.printStackTrace()
+        when {
+            markers.size < 2 -> {
+                Toast.makeText(this, "برای مسیریابی باید دو نقطه انتخاب شود", Toast.LENGTH_SHORT).show()
+                overviewToggleButton.isChecked = false
+                stepByStepToggleButton.isChecked = false
             }
-        } else if (stepByStepToggleButton.isChecked) {
-            try {
-                mapView.removePolyline(onMapPolyline)
-                onMapPolyline = Polyline(decodedStepByStepPath, getLineStyle())
-                //draw polyline between route points
-                mapView.addPolyline(onMapPolyline)
-            } catch (e: Exception) {
-                e.printStackTrace()
+            overviewToggleButton.isChecked -> {
+                try {
+                    mapView.removePolyline(onMapPolyline)
+                    onMapPolyline = Polyline(routeOverviewPolylinePoints, getLineStyle())
+                    //draw polyline between route points
+                    mapView.addPolyline(onMapPolyline)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            stepByStepToggleButton.isChecked -> {
+                try {
+                    mapView.removePolyline(onMapPolyline)
+                    onMapPolyline = Polyline(decodedStepByStepPath, getLineStyle())
+                    //draw polyline between route points
+                    mapView.addPolyline(onMapPolyline)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         }
     }
