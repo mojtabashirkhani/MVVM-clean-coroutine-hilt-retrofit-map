@@ -20,6 +20,8 @@ import org.neshan.mapsdk.model.Polyline
 import org.neshan.servicessdk.direction.NeshanDirection
 import org.neshan.servicessdk.direction.model.NeshanDirectionResult
 import org.neshan.servicessdk.direction.model.Route
+import org.neshan.servicessdk.distancematrix.NeshanDistanceMatrix
+import org.neshan.servicessdk.distancematrix.model.NeshanDistanceMatrixResult
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -31,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
     private lateinit var animSt: AnimationStyle
     private lateinit var marker: Marker
+
     // define two toggle button and connecting together for two type of routing
     private lateinit var overviewToggleButton: ToggleButton
     private lateinit var stepByStepToggleButton: ToggleButton
@@ -62,30 +65,37 @@ class MainActivity : AppCompatActivity() {
         setupMarker()
 
 
-
     }
 
     private fun setupMarker() {
 
 
-
         mapView.setOnMapLongClickListener { latLng ->
-            if (markers.size < 2) {
+
+
+            if (markers.size < 6) {
                 markers.add(createMarker(latLng));
-                if (markers.size == 2) {
+                if (markers.size == 6) {
+                    markers[0].title = "origin"
+                    for (i in 1..5) {
+                        markers[i].title = "destination"
+                    }
                     runOnUiThread {
                         overviewToggleButton.isChecked = true;
-                        neshanRoutingApi()
+//                        neshanRoutingApi()
+                        neshanMatrixApi()
                     };
                 }
             } else {
+                TODO("Not yet implemented")
 //                runOnUiThread(() -> Toast.makeText(Routing.this, "مسیریابی بین دو نقطه انجام میشود!", Toast.LENGTH_SHORT).show());
             }
         }
 
         // when on marker clicked, change marker style to blue
         // when on marker clicked, change marker style to blue
-        mapView.setOnMarkerClickListener { marker1 -> mapView.removeMarker(marker1)
+        mapView.setOnMarkerClickListener { marker1 ->
+            mapView.removeMarker(marker1)
             markers.remove(marker1)
         }
     }
@@ -128,13 +138,45 @@ class MainActivity : AppCompatActivity() {
         mapView.setZoom(14.0F, 0.0F)
     }
 
+    private fun neshanMatrixApi() {
+        val distances = arrayListOf<Int>()
+        val origins = arrayListOf<LatLng>(markers[0].latLng)
+        val destinations = arrayListOf<LatLng>()
+        for (i in 1..5) {
+            destinations.add(markers[i].latLng)
+        }
+        NeshanDistanceMatrix.Builder(
+            "service.VNlPhrWb3wYRzEYmstQh3GrAXyhyaN55AqUSRR3V",
+            origins, destinations
+        ).build().call(object : Callback<NeshanDistanceMatrixResult?> {
+            override fun onResponse(
+                call: Call<NeshanDistanceMatrixResult?>,
+                response: Response<NeshanDistanceMatrixResult?>
+            ) {
+                val responseBody = response.body()
+                for (i in 0 .. 4){
+                    distances.add(responseBody!!.rows[0].elements[i].duration.value)
+                }
+               val shortestDistanceIndexValue =  distances.sortedWith(compareBy { it}).first().let { distances.indexOf(it) }
+               val shortestDestinationPath =  responseBody!!.destinationAddresses[shortestDistanceIndexValue]
+                neshanRoutingApi(origins[0],LatLng(shortestDestinationPath.split(",")[0].toDouble(), shortestDestinationPath.split(",")[1].toDouble()))
+            }
+
+            override fun onFailure(call: Call<NeshanDistanceMatrixResult?>, t: Throwable) {
+//                TODO("Not yet implemented")
+            }
+
+        })
+
+    }
 
 
-    private fun neshanRoutingApi() {
+    private fun neshanRoutingApi(origin: LatLng, destination: LatLng) {
+        //TODO find shortest path between origin and destinations
         NeshanDirection.Builder(
             "service.VNlPhrWb3wYRzEYmstQh3GrAXyhyaN55AqUSRR3V",
-            markers[0].latLng,
-            markers[1].latLng
+            origin,
+            destination
         )
             .build().call(object : Callback<NeshanDirectionResult?> {
                 override fun onResponse(
@@ -143,19 +185,19 @@ class MainActivity : AppCompatActivity() {
                 ) {
 
                     // two type of routing
-                    if (response != null && response.body() != null && response.body()!!
-                            .getRoutes() != null && !response.body()!!.getRoutes().isEmpty()
+                    if (response?.body() != null && response.body()!!
+                            .routes != null && response.body()!!.routes.isNotEmpty()
                     ) {
-                        val route: Route = response.body()!!.getRoutes().get(0)
+                        val route: Route = response.body()!!.routes[0]
                         routeOverviewPolylinePoints = ArrayList(
                             PolylineEncoding.decode(
-                                route.getOverviewPolyline().getEncodedPolyline()
+                                route.overviewPolyline.encodedPolyline
                             )
                         )
                         decodedStepByStepPath = ArrayList()
 
                         // decoding each segment of steps and putting to an array
-                        for (step in route.getLegs().get(0).getDirectionSteps()) {
+                        for (step in route.legs[0].directionSteps) {
                             decodedStepByStepPath!!.addAll(PolylineEncoding.decode(step.encodedPolyline))
                         }
                         onMapPolyline = Polyline(routeOverviewPolylinePoints, getLineStyle())
@@ -168,11 +210,15 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-               override fun onFailure(call: Call<NeshanDirectionResult?>?, t: Throwable?) {}
+                override fun onFailure(call: Call<NeshanDirectionResult?>?, t: Throwable?) {
+//                    TODO("Not yet implemented")
+                }
             })
     }
 
     private fun createMarker(latLng: LatLng?): Marker {
+
+
         val animStBl = AnimationStyleBuilder()
         animStBl.fadeAnimationType = AnimationType.ANIMATION_TYPE_SMOOTHSTEP
         animStBl.sizeAnimationType = AnimationType.ANIMATION_TYPE_SPRING
@@ -187,11 +233,27 @@ class MainActivity : AppCompatActivity() {
         // and then call buildStyle method on it. This method returns an object of type MarkerStyle
         val markStCr = MarkerStyleBuilder()
         markStCr.size = 30f
+
         markStCr.bitmap = BitmapUtils.createBitmapFromAndroidBitmap(
             BitmapFactory.decodeResource(
                 resources, R.drawable.ic_marker
             )
         )
+
+        /* if(marker.title == "origin") {
+             markStCr.bitmap = BitmapUtils.createBitmapFromAndroidBitmap(
+                 BitmapFactory.decodeResource(
+                     resources, R.drawable.ic_origin_location
+                 )
+             )
+         } else if (marker.title == "destination") {
+             markStCr.bitmap = BitmapUtils.createBitmapFromAndroidBitmap(
+                 BitmapFactory.decodeResource(
+                     resources, R.drawable.ic_marker
+                 )
+             )
+         }*/
+
         // AnimationStyle object - that was created before - is used here
         // AnimationStyle object - that was created before - is used here
         markStCr.animationStyle = animSt
@@ -234,6 +296,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun findRoute(view: View?) {
+        //TODO handle route when have 1 origin and 5 destination
         if (markers.size < 2) {
             Toast.makeText(this, "برای مسیریابی باید دو نقطه انتخاب شود", Toast.LENGTH_SHORT).show()
             overviewToggleButton.isChecked = false
