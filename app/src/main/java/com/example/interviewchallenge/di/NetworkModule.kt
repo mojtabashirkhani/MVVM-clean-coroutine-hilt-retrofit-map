@@ -4,7 +4,6 @@ import android.os.Environment
 import com.example.interviewchallenge.core.Constants
 import com.example.interviewchallenge.data.DefaultRequestInterceptor
 import com.example.interviewchallenge.data.MapApi
-import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -30,7 +29,7 @@ class NetworkModule {
     fun provideOkHttpClient(): OkHttpClient {
         val cache = Cache(Environment.getDownloadCacheDirectory(), 10 * 1024 * 1024)
         return OkHttpClient.Builder()
-            .addNetworkInterceptor(StethoInterceptor())
+//            .addNetworkInterceptor(StethoInterceptor())
             .addInterceptor(DefaultRequestInterceptor())
             .readTimeout(1, TimeUnit.MINUTES)
             .writeTimeout(1, TimeUnit.MINUTES)
@@ -43,7 +42,7 @@ class NetworkModule {
     @Named("non_cached")
     fun provideNonCachedOkHttpClient(): OkHttpClient {
         return OkHttpClient.Builder()
-            .addNetworkInterceptor(StethoInterceptor())
+//            .addNetworkInterceptor(StethoInterceptor())
             .addInterceptor(DefaultRequestInterceptor())
             .readTimeout(1, TimeUnit.MINUTES)
             .writeTimeout(1, TimeUnit.MINUTES)

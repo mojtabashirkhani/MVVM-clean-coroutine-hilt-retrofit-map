@@ -2,7 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
-    id 'kotlin-android-extensions'
+    id 'kotlin-parcelize'
     id 'dagger.hilt.android.plugin'
 
 }
@@ -75,7 +75,7 @@ dependencies {
     implementation "androidx.navigation:navigation-fragment-ktx:$lifecycle_version"
     implementation "androidx.navigation:navigation-ui-ktx:$lifecycle_version"
 
-    kapt 'com.android.databinding:compiler:3.1.4'
+//    kapt 'com.android.databinding:compiler:3.1.4'
 
     //hilt
     implementation "com.google.dagger:hilt-android:2.38.1"
@@ -98,10 +98,10 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.1'
 
 
-    // debug bridge
+   /* // debug bridge
     implementation 'com.facebook.stetho:stetho:1.5.1'
     implementation 'com.facebook.stetho:stetho-okhttp3:1.5.1'
-    implementation 'com.facebook.stetho:stetho-urlconnection:1.5.1'
+    implementation 'com.facebook.stetho:stetho-urlconnection:1.5.1'*/
 
 
     //Neshan sdk library
