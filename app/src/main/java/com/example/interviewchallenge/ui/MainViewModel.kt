@@ -1,7 +1,9 @@
 package com.example.interviewchallenge.ui
 
+import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-
-class MainViewModel {
+@HiltViewModel
+class MainViewModel @Inject constructor(): ViewModel() {
 }
