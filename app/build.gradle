@@ -43,6 +43,10 @@ android {
             universalApk false
         }
     }
+
+    kapt {
+        generateStubs = true
+    }
 }
 
 dependencies {
@@ -86,9 +90,9 @@ dependencies {
     implementation 'com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2"
     //moshi
-    implementation("com.squareup.moshi:moshi-kotlin:1.9.2")
-    implementation("com.squareup.moshi:moshi:1.9.2")
-    kapt("com.squareup.moshi:moshi-kotlin-codegen:1.9.2")
+    implementation("com.squareup.moshi:moshi-kotlin:1.13.0")
+    implementation("com.squareup.moshi:moshi:1.13.0")
+    kapt("com.squareup.moshi:moshi-kotlin-codegen:1.13.0")
     implementation "com.squareup.retrofit2:converter-moshi:2.8.1"
 
     //retrofit & okhttp
