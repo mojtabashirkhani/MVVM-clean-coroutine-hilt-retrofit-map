@@ -1,5 +1,7 @@
 package com.example.interviewchallenge.data
 
+import com.example.interviewchallenge.data.remote.model.directionModel.DirectionModel
+import com.example.interviewchallenge.data.remote.model.matrixModel.MatrixModel
 import org.neshan.servicessdk.direction.model.NeshanDirectionResult
 import org.neshan.servicessdk.distancematrix.model.NeshanDistanceMatrixResult
 import retrofit2.Response
@@ -19,7 +21,7 @@ interface MapApi {
         @Query("avoidTrafficZone") avoidTerrificZone: Boolean,
         @Query("avoidOddEvenZone") avoidOddEvenZone: Boolean,
         @Query("alternative") alternative: Boolean
-    ): Response<NeshanDirectionResult?>?
+    ): DirectionModel
 
     @GET("/v2/direction")
     suspend fun getNeshanDirection(
@@ -29,7 +31,7 @@ interface MapApi {
         @Query("avoidTrafficZone") avoidTerrificZone: Boolean,
         @Query("avoidOddEvenZone") avoidOddEvenZone: Boolean,
         @Query("alternative") alternative: Boolean
-    ): Response<NeshanDirectionResult?>?
+    ): DirectionModel
 
 
     @GET("/v1/distance-matrix")
@@ -37,7 +39,7 @@ interface MapApi {
         @Header("Api-Key") mapApiKey: String?,
         @Query("origins") origin: String?,
         @Query("destinations") destination: String?
-    ): Response<NeshanDistanceMatrixResult?>?
+    ): MatrixModel
 
 
 }
