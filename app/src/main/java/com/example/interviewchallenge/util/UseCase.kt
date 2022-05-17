@@ -1,13 +1,12 @@
 package com.example.interviewchallenge.util
 
-import com.example.interviewchallenge.data.remote.model.ErrorModel
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
 
 typealias CompletionBlock<T> = UseCase.Request<T>.() -> Unit
 
-abstract class UseCase<T, in Params>(private val errorUtil: CloudErrorMapper) {
+abstract class UseCase<T, in Params>() {
 
     private var parentJob: Job = Job()
     var backgroundContext: CoroutineContext = Dispatchers.IO
@@ -28,8 +27,7 @@ abstract class UseCase<T, in Params>(private val errorUtil: CloudErrorMapper) {
             } catch (cancellationException: CancellationException) {
                 response(cancellationException)
             } catch (e: Exception) {
-                val error = errorUtil.mapToDomainErrorException(e)
-                response(error)
+               response(e)
             }
         }
     }
@@ -46,14 +44,14 @@ abstract class UseCase<T, in Params>(private val errorUtil: CloudErrorMapper) {
 
     class Request<T> {
         private var onComplete: ((T) -> Unit)? = null
-        private var onError: ((ErrorModel) -> Unit)? = null
+        private var onError: ((Exception) -> Unit)? = null
         private var onCancel: ((CancellationException) -> Unit)? = null
 
         fun onComplete(block: (T) -> Unit) {
             onComplete = block
         }
 
-        fun onError(block: (ErrorModel) -> Unit) {
+        fun onError(block: (Exception) -> Unit) {
 
             onError = block
 
@@ -65,22 +63,15 @@ abstract class UseCase<T, in Params>(private val errorUtil: CloudErrorMapper) {
 
 
         operator fun invoke(result: T) {
-            onComplete?.let {
-                it.invoke(result)
-            }
+            onComplete?.invoke(result)
         }
 
-        operator fun invoke(error: ErrorModel) {
-            onError?.let {
-                it.invoke(error)
-
-            }
+        operator fun invoke(error: Exception) {
+            onError?.invoke(error)
         }
 
         operator fun invoke(error: CancellationException) {
-            onCancel?.let {
-                it.invoke(error)
-            }
+            onCancel?.invoke(error)
         }
     }
 }

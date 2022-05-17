@@ -2,15 +2,14 @@ package com.example.interviewchallenge.data.remote.usecase
 
 import com.example.interviewchallenge.data.remote.model.matrixModel.MatrixModel
 import com.example.interviewchallenge.repo.MapRepository
-import com.example.interviewchallenge.util.CloudErrorMapper
 import com.example.interviewchallenge.util.UseCase
+import org.neshan.servicessdk.distancematrix.model.NeshanDistanceMatrixResult
 import javax.inject.Inject
 
 class MatrixUseCase @Inject constructor(
-    errorUtil: CloudErrorMapper,
     private val mapRepository: MapRepository
-) : UseCase<MatrixModel, MatrixUseCase.MatrixParams>(errorUtil) {
-    override suspend fun executeOnBackground(params: MatrixParams?): MatrixModel {
+) : UseCase<NeshanDistanceMatrixResult, MatrixUseCase.MatrixParams>() {
+    override suspend fun executeOnBackground(params: MatrixParams?): NeshanDistanceMatrixResult {
         return mapRepository.getMatrix(
             params?.mapApiKey ?: "",
             params?.origin ?: "",

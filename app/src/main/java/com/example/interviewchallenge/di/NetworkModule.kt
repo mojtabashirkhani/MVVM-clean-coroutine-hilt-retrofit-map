@@ -4,6 +4,7 @@ import android.os.Environment
 import com.example.interviewchallenge.core.Constants
 import com.example.interviewchallenge.data.DefaultRequestInterceptor
 import com.example.interviewchallenge.data.MapApi
+import com.google.gson.Gson
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -14,6 +15,7 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
@@ -51,16 +53,25 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun provideMoshi(): Moshi {
-        return Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+    fun providesGson(): Gson {
+        return Gson()
     }
+
+    @Provides
+    @Singleton
+    fun providesGsonConverterFactory(): GsonConverterFactory {
+        return GsonConverterFactory.create()
+    }
+
+
+
 
     @Singleton
     @Provides
-    fun provideRetrofit(moshi: Moshi, @Named("cached") client: OkHttpClient): Retrofit.Builder {
+    fun provideRetrofit(gson: GsonConverterFactory, @Named("cached") client: OkHttpClient): Retrofit.Builder {
         return Retrofit.Builder()
             .client(client)
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .addConverterFactory(gson)
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
     }
 

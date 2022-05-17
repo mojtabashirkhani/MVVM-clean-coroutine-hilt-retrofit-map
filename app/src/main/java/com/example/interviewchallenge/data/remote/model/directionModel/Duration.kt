@@ -1,15 +1,11 @@
 package com.example.interviewchallenge.data.remote.model.directionModel
 
-import android.os.Parcelable
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
-import kotlinx.parcelize.Parcelize
+import com.google.gson.annotations.SerializedName
 
-@Parcelize
-@JsonClass(generateAdapter = true)
+
 data class Duration (
 
-  @Json(name = "value" ) var value : Int?    = null,
-  @Json(name = "text"  ) var text  : String? = null
+  @SerializedName("value" ) var value : Int?    = null,
+  @SerializedName("text"  ) var text  : String? = null
 
-) : Parcelable
+)

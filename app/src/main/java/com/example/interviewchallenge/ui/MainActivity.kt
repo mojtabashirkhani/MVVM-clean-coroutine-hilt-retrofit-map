@@ -7,9 +7,14 @@ import android.widget.CompoundButton
 import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.viewModelScope
 import com.carto.graphics.Color
 import com.carto.styles.*
 import com.example.interviewchallenge.R
+import com.example.interviewchallenge.data.remote.usecase.DirectionUseCase
 import dagger.hilt.android.AndroidEntryPoint
 import org.neshan.common.model.LatLng
 import org.neshan.common.utils.PolylineEncoding
@@ -25,10 +30,15 @@ import org.neshan.servicessdk.distancematrix.model.NeshanDistanceMatrixResult
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    private val viewModel: MainViewModel by lazy {
+        ViewModelProvider(this).get(MainViewModel::class.java)
+    }
 
     private var originRemoved = false
 
@@ -56,15 +66,36 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        with(viewModel) {
+
+          /*  this.setDirectionParams(
+                DirectionUseCase.DirectionParams(
+                    "service.VNlPhrWb3wYRzEYmstQh3GrAXyhyaN55AqUSRR3V",
+                    "35.767234,51.330743",
+                    "36.767234, 52.330743"
+                )
+            )*/
+
+
+             this.direction.observe(this@MainActivity, Observer {
+                 it.toString()
+             })
+
+           /*  this.matrix.observe(this@MainActivity, Observer {
+                 it.toString()
+             })*/
+
+        }
+
     }
 
     override fun onStart() {
         super.onStart()
-        initViews()
+       /* initViews()
         // Initializing mapView element
         initMap()
 
-        setupMarker()
+        setupMarker()*/
 
 
     }
@@ -79,11 +110,11 @@ class MainActivity : AppCompatActivity() {
                 when {
                     markers.size == 0 -> {
                         originRemoved = true
-                        markers.add(0,createMarker(latLng, originRemoved))
+                        markers.add(0, createMarker(latLng, originRemoved))
                         originRemoved = false
                     }
                     originRemoved -> {
-                        markers.add(0,createMarker(latLng, originRemoved))
+                        markers.add(0, createMarker(latLng, originRemoved))
                         originRemoved = false
                     }
                     else -> {
@@ -170,14 +201,23 @@ class MainActivity : AppCompatActivity() {
                 response: Response<NeshanDistanceMatrixResult?>
             ) {
                 if (response.body() != null && response.body()!!
-                        .rows != null && response.body()!!.rows.isNotEmpty()){
+                        .rows != null && response.body()!!.rows.isNotEmpty()
+                ) {
                     val responseBody = response.body()
-                    for (i in 0 .. 4){
+                    for (i in 0..4) {
                         distances.add(responseBody!!.rows[0].elements[i].duration.value)
                     }
-                    val shortestDistanceIndexValue =  distances.sortedWith(compareBy { it}).first().let { distances.indexOf(it) }
-                    val shortestDestinationPath =  responseBody!!.destinationAddresses[shortestDistanceIndexValue]
-                    neshanRoutingApi(origins[0],LatLng(shortestDestinationPath.split(",")[0].toDouble(), shortestDestinationPath.split(",")[1].toDouble()))
+                    val shortestDistanceIndexValue =
+                        distances.sortedWith(compareBy { it }).first().let { distances.indexOf(it) }
+                    val shortestDestinationPath =
+                        responseBody!!.destinationAddresses[shortestDistanceIndexValue]
+                    neshanRoutingApi(
+                        origins[0],
+                        LatLng(
+                            shortestDestinationPath.split(",")[0].toDouble(),
+                            shortestDestinationPath.split(",")[1].toDouble()
+                        )
+                    )
                 } else {
 //                    Toast.makeText(this@MainActivity, "مسیری یافت نشد", Toast.LENGTH_LONG).show()
                 }
@@ -227,7 +267,8 @@ class MainActivity : AppCompatActivity() {
                         // focusing camera on first point of drawn line
                         mapSetPosition(overview)
                     } else {
-                        Toast.makeText(this@MainActivity, "مسیری یافت نشد", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@MainActivity, "مسیری یافت نشد", Toast.LENGTH_LONG)
+                            .show()
                     }
                 }
 
@@ -314,7 +355,8 @@ class MainActivity : AppCompatActivity() {
     fun findRoute(view: View?) {
         when {
             markers.size < 2 -> {
-                Toast.makeText(this, "برای مسیریابی باید دو نقطه انتخاب شود", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "برای مسیریابی باید دو نقطه انتخاب شود", Toast.LENGTH_SHORT)
+                    .show()
                 overviewToggleButton.isChecked = false
                 stepByStepToggleButton.isChecked = false
             }
