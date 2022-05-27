@@ -1,8 +1,7 @@
 package com.example.interviewchallenge.ui
 
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import com.example.interviewchallenge.data.remote.model.directionModel.DirectionModel
 import com.example.interviewchallenge.data.remote.usecase.DirectionUseCase
 import com.example.interviewchallenge.data.remote.usecase.MatrixUseCase
@@ -13,56 +12,44 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    directionUseCase: DirectionUseCase,
-    matrixUseCase: MatrixUseCase
+     private val directionUseCase: DirectionUseCase,
+     private val matrixUseCase: MatrixUseCase,
 ) : ViewModel() {
 
     val direction = MutableLiveData<NeshanDirectionResult>()
     val matrix = MutableLiveData<NeshanDistanceMatrixResult>()
 
-    val _directionParams = MutableLiveData<DirectionUseCase.DirectionParams>()
-    val _matrixParams = MutableLiveData<MatrixUseCase.MatrixParams>()
 
-
-    fun setDirectionParams(params: DirectionUseCase.DirectionParams) {
-        if (_directionParams.value == params)
-            return
-        _directionParams.postValue(params)
-    }
-
-    fun setMatrixParams(params: MatrixUseCase.MatrixParams) {
-        if (_matrixParams.value == params)
-            return
-        _matrixParams.postValue(params)
-    }
-
-    init {
-
-        directionUseCase.execute(
-            DirectionUseCase.DirectionParams(
-                "service.VNlPhrWb3wYRzEYmstQh3GrAXyhyaN55AqUSRR3V",
-                "35.767234,51.330743",
-                "35.767238,51.330745"
-            )
-        ) {
+    fun getDirectionParams(params: DirectionUseCase.DirectionParams) {
+        directionUseCase.execute(params) {
             onComplete {
-                Log.d(TAG, it.toString())
-                direction.value = it
+                 direction.postValue(it)
             }
             onError {
                 it.message
             }
-            onCancel { }
-        }
-       /* matrixUseCase.execute(_matrixParams.value) {
-            onComplete {
-                Log.d(TAG, it.toString())
-                matrix.value = it
+            onCancel {
+                it.message
             }
-            onError { }
-            onCancel { }
-        }*/
+        }
     }
+
+
+
+    fun getMatrixParams(params: MatrixUseCase.MatrixParams) {
+         matrixUseCase.execute(params) {
+                    onComplete {
+                        matrix.postValue(it)
+                    }
+                    onError {
+                        it.message
+                    }
+                    onCancel {
+                        it.message
+                    }
+                }
+    }
+
 
 
     override fun onCleared() {
