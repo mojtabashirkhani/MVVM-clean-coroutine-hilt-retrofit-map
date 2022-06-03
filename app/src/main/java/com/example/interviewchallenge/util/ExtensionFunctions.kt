@@ -1,5 +1,7 @@
 package com.example.interviewchallenge.util
 
+import android.os.Looper
+import androidx.lifecycle.MutableLiveData
 import org.neshan.common.model.LatLng
 
 object ExtensionFunctions {
@@ -19,5 +21,15 @@ object ExtensionFunctions {
 
         return location
 
+    }
+
+    fun <T> MutableLiveData<T>.assignValue(newValue: T){
+
+        if(Looper.myLooper() == Looper.getMainLooper()) {
+            this.value = newValue
+        }
+        else {
+            this.postValue(newValue)
+        }
     }
 }

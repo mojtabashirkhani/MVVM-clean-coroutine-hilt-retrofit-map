@@ -23,42 +23,4 @@
         app:layout_constraintGuide_percent="0.5" />
 
 
-    <ToggleButton
-        android:id="@+id/overviewToggleButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:checked="false"
-        android:drawablePadding="8dp"
-        android:onClick="findRoute"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:textOff="رسم Overview"
-        android:textOn="رسم Overview"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/guideline"
-        app:layout_constraintStart_toStartOf="parent"
-        />
-
-    <ToggleButton
-        android:id="@+id/stepByStepToggleButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:checked="false"
-        android:drawablePadding="8dp"
-        android:onClick="findRoute"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:textOff="رسم StepByStep"
-        android:textOn="رسم StepByStep"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline"
-         />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

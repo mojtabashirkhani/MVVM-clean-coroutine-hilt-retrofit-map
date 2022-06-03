@@ -1,5 +1,6 @@
 package com.example.interviewchallenge.ui
 
+import com.example.interviewchallenge.util.EventObserver
 import android.os.Bundle
 import android.view.View
 import android.widget.CompoundButton
@@ -8,11 +9,8 @@ import android.widget.ToggleButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.carto.graphics.Color
-import com.carto.styles.AnimationStyle
-import com.carto.styles.LineStyle
-import com.carto.styles.LineStyleBuilder
 import com.example.interviewchallenge.R
+import com.example.interviewchallenge.core.Constants.NetworkService.API_KEY_MAP
 import com.example.interviewchallenge.data.remote.usecase.DirectionUseCase
 import com.example.interviewchallenge.data.remote.usecase.MatrixUseCase
 import com.example.interviewchallenge.util.ExtensionFunctions.latLngToString
@@ -27,14 +25,7 @@ import org.neshan.common.utils.PolylineEncoding
 import org.neshan.mapsdk.MapView
 import org.neshan.mapsdk.model.Marker
 import org.neshan.mapsdk.model.Polyline
-import org.neshan.servicessdk.direction.NeshanDirection
-import org.neshan.servicessdk.direction.model.NeshanDirectionResult
 import org.neshan.servicessdk.direction.model.Route
-import org.neshan.servicessdk.distancematrix.NeshanDistanceMatrix
-import org.neshan.servicessdk.distancematrix.model.NeshanDistanceMatrixResult
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 
 @AndroidEntryPoint
@@ -47,10 +38,6 @@ class MainActivity : AppCompatActivity() {
     private var originRemoved = false
 
     private lateinit var mapView: MapView
-
-    // define two toggle button and connecting together for two type of routing
-    private lateinit var overviewToggleButton: ToggleButton
-    private lateinit var stepByStepToggleButton: ToggleButton
 
     // we save decoded Response of routing encoded string because we don't want request every time we clicked toggle buttons
     private var routeOverviewPolylinePoints: ArrayList<LatLng>? = null
@@ -108,9 +95,8 @@ class MainActivity : AppCompatActivity() {
                         markers[i].title = "destination"
                     }
                     runOnUiThread {
-                        overviewToggleButton.isChecked = true;
                         neshanMatrixApi()
-                    };
+                    }
                 }
             } else {
 //            Toast.makeText(this@MainActivity, "مسیریابی بین دو نقطه انجام میشود!", Toast.LENGTH_SHORT).show()
@@ -131,35 +117,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun initViews() {
         mapView = findViewById(R.id.map)
-
-        val changeChecker =
-            CompoundButton.OnCheckedChangeListener { toggleButton, isChecked -> // if any toggle button checked:
-                if (isChecked) {
-                    // if overview toggle button checked other toggle button is uncheck
-                    if (toggleButton === overviewToggleButton) {
-                        stepByStepToggleButton.isChecked = false
-                        overview = true
-                    }
-                    if (toggleButton === stepByStepToggleButton) {
-                        overviewToggleButton.isChecked = false
-                        overview = false
-                    }
-                }
-                if (!isChecked && onMapPolyline != null) {
-                    mapView.removePolyline(onMapPolyline)
-                }
-            }
-
-        // each toggle button has a checkChangeListener for uncheck other toggle button
-        overviewToggleButton = findViewById(R.id.overviewToggleButton);
-        overviewToggleButton.setOnCheckedChangeListener(changeChecker);
-
-        stepByStepToggleButton = findViewById(R.id.stepByStepToggleButton);
-        stepByStepToggleButton.setOnCheckedChangeListener(changeChecker);
     }
 
 
     private fun neshanMatrixApi() {
+
+        if (onMapPolyline != null)
+        mapView.removePolyline(onMapPolyline)
+
         val distances = arrayListOf<Int>()
         val origins = arrayListOf<LatLng>(markers[0].latLng)
         val destinations = arrayListOf<LatLng>()
@@ -168,10 +133,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewModel.getMatrixParams(
-            MatrixUseCase.MatrixParams("service.VNlPhrWb3wYRzEYmstQh3GrAXyhyaN55AqUSRR3V",
+            MatrixUseCase.MatrixParams(API_KEY_MAP,
             splitArrayListOfMatrixLocations(origins), splitArrayListOfMatrixLocations(destinations)))
 
-        viewModel.matrix.observe(this, Observer { response ->
+        viewModel.matrix.observe(this, EventObserver { response ->
             for (i in 0..4) {
                 distances.add(response.rows[0].elements[i].duration.value)
             }
@@ -193,15 +158,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun neshanRoutingApi(origin: LatLng, destination: LatLng) {
 
-        viewModel.getDirectionParams( DirectionUseCase.DirectionParams("service.VNlPhrWb3wYRzEYmstQh3GrAXyhyaN55AqUSRR3V",
+        viewModel.getDirectionParams( DirectionUseCase.DirectionParams(API_KEY_MAP,
             latLngToString(origin),
             latLngToString(destination)))
 
-        viewModel.direction.observe(this, Observer {
-        if (it != null && it
-                            .routes != null && it.routes.isNotEmpty()
+        viewModel.direction.observe(this, EventObserver { response ->
+        if (!(response.routes == null || response.routes.isEmpty())
                     ) {
-            val route: Route = it.routes[0]
+            val route: Route = response.routes[0]
             routeOverviewPolylinePoints = ArrayList(
                 PolylineEncoding.decode(
                     route.overviewPolyline.encodedPolyline
@@ -217,45 +181,9 @@ class MainActivity : AppCompatActivity() {
             //draw polyline between route points
             mapView.addPolyline(onMapPolyline)
             // focusing camera on first point of drawn line
-            mapSetPosition(overview, mapView, markers)
+//            mapSetPosition(overview, mapView, markers)
             }
         })
 
     }
-
-    // In this method we create a LineStyleCreator, set its features and call buildStyle() method
-    // on it and return the LineStyle object (the same routine as crating a marker style)
-
-    fun findRoute(view: View) {
-        when {
-            markers.size < 2 -> {
-                Toast.makeText(this, "برای مسیریابی باید دو نقطه انتخاب شود", Toast.LENGTH_SHORT)
-                    .show()
-                overviewToggleButton.isChecked = false
-                stepByStepToggleButton.isChecked = false
-            }
-            overviewToggleButton.isChecked -> {
-                try {
-                    mapView.removePolyline(onMapPolyline)
-                    onMapPolyline = Polyline(routeOverviewPolylinePoints, getLineStyle())
-                    //draw polyline between route points
-                    mapView.addPolyline(onMapPolyline)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-            stepByStepToggleButton.isChecked -> {
-                try {
-                    mapView.removePolyline(onMapPolyline)
-                    onMapPolyline = Polyline(decodedStepByStepPath, getLineStyle())
-                    //draw polyline between route points
-                    mapView.addPolyline(onMapPolyline)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
-    }
-
-
 }
