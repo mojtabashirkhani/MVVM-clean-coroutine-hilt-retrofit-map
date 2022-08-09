@@ -1,9 +1,9 @@
 package com.example.interviewchallenge.repo
 
-import com.example.interviewchallenge.data.MapApi
+import com.example.interviewchallenge.data.NeshanMapApi
 import javax.inject.Inject
 
-class MapRepository @Inject constructor(private val mapApi: MapApi) {
+class MapRepository @Inject constructor(private val mapApi: NeshanMapApi) {
 
     suspend fun getDirections(
         apiKey: String, origin: String, destination: String, waypoints: String,

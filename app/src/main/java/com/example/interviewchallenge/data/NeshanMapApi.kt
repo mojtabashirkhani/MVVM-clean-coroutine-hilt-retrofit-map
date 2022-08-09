@@ -1,6 +1,7 @@
 package com.example.interviewchallenge.data
 
 import com.example.interviewchallenge.data.remote.model.directionModel.DirectionModel
+import com.example.interviewchallenge.data.remote.model.reverse.ReverseNeshan
 import org.neshan.servicessdk.direction.model.NeshanDirectionResult
 import org.neshan.servicessdk.distancematrix.model.NeshanDistanceMatrixResult
 import retrofit2.http.GET
@@ -8,7 +9,7 @@ import retrofit2.http.Header
 import retrofit2.http.Query
 
 
-interface MapApi {
+interface NeshanMapApi {
 
     @GET("/v2/direction")
     suspend fun getNeshanDirection(
@@ -38,6 +39,14 @@ interface MapApi {
         @Query("origins") origin: String?,
         @Query("destinations") destination: String?
     ): NeshanDistanceMatrixResult
+
+
+    @GET("/v5/reverse")
+    suspend fun getNeshanReverseGeocoding(
+        @Header("Api-Key") mapApiKey: String,
+        @Query("lat") lat: String,
+        @Query("lng") lng: String
+    ): ReverseNeshan
 
 
 }

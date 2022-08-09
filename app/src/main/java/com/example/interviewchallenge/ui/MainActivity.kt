@@ -2,30 +2,14 @@ package com.example.interviewchallenge.ui
 
 import com.example.interviewchallenge.util.EventObserver
 import android.os.Bundle
-import android.view.View
-import android.widget.CompoundButton
-import android.widget.Toast
-import android.widget.ToggleButton
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.interviewchallenge.R
-import com.example.interviewchallenge.core.Constants.NetworkService.API_KEY_MAP
-import com.example.interviewchallenge.data.remote.usecase.DirectionUseCase
-import com.example.interviewchallenge.data.remote.usecase.MatrixUseCase
-import com.example.interviewchallenge.util.ExtensionFunctions.latLngToString
-import com.example.interviewchallenge.util.ExtensionFunctions.splitArrayListOfMatrixLocations
-import com.example.interviewchallenge.util.MapUtils.createMarker
-import com.example.interviewchallenge.util.MapUtils.getLineStyle
-import com.example.interviewchallenge.util.MapUtils.initMap
-import com.example.interviewchallenge.util.MapUtils.mapSetPosition
+import com.example.interviewchallenge.core.Constants
+import com.example.interviewchallenge.data.remote.usecase.ReverseMapIrUseCase
+import com.example.interviewchallenge.data.remote.usecase.ReverseNeshanUseCase
 import dagger.hilt.android.AndroidEntryPoint
-import org.neshan.common.model.LatLng
-import org.neshan.common.utils.PolylineEncoding
-import org.neshan.mapsdk.MapView
-import org.neshan.mapsdk.model.Marker
-import org.neshan.mapsdk.model.Polyline
-import org.neshan.servicessdk.direction.model.Route
 
 
 @AndroidEntryPoint
@@ -35,7 +19,7 @@ class MainActivity : AppCompatActivity() {
         ViewModelProvider(this).get(MainViewModel::class.java)
     }
 
-    private var originRemoved = false
+ /*   private var originRemoved = false
 
     private lateinit var mapView: MapView
 
@@ -48,27 +32,36 @@ class MainActivity : AppCompatActivity() {
 
     private val markers: ArrayList<Marker> = ArrayList()
 
-    private var onMapPolyline: Polyline? = null
+    private var onMapPolyline: Polyline? = null*/
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        viewModel.getMapIrReverseParams(ReverseMapIrUseCase.ReverseParams(
+            Constants.NetworkService.API_KEY_MAP_IR, "35.7390942460414", "51.33668674793789"
+        ))
+
+        viewModel.getNeshanRverseParams(ReverseNeshanUseCase.ReverseParams(
+            Constants.NetworkService.API_KEY_MAP_NESHAN, "35.7390942460414", "51.33668674793789"
+        ))
+
     }
 
     override fun onStart() {
         super.onStart()
-        initViews()
-        // Initializing mapView element
-        initMap(mapView)
+        viewModel.reverseMapIr.observe(this, EventObserver {
+            Log.d("MainActivity", it.city.toString())
+        })
 
-        setupMarker()
-
-
+        viewModel.reverseNeshan.observe(this, EventObserver{
+            Log.d("MainActivity", it.city.toString())
+        })
     }
 
-    private fun setupMarker() {
+
+   /* private fun setupMarker() {
 
 
         mapView.setOnMapLongClickListener { latLng ->
@@ -112,15 +105,15 @@ class MainActivity : AppCompatActivity() {
             mapView.removeMarker(marker)
             markers.remove(marker)
         }
-    }
+    }*/
 
 
-    private fun initViews() {
+ /*   private fun initViews() {
         mapView = findViewById(R.id.map)
-    }
+    }*/
 
 
-    private fun neshanMatrixApi() {
+   /* private fun neshanMatrixApi() {
 
         if (onMapPolyline != null)
         mapView.removePolyline(onMapPolyline)
@@ -185,5 +178,5 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-    }
+    }*/
 }
